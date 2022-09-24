@@ -2,7 +2,6 @@ package api
 
 import (
 	"io"
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -19,6 +18,7 @@ func (server *Server) Start(address string) error {
 
 // Create new server instance + create routes
 func NewServer() *Server {
+	gin.SetMode(gin.ReleaseMode)
 	server := &Server{}
 	router := gin.Default()
 
@@ -34,8 +34,8 @@ func NewServer() *Server {
 	router.POST("/receive_webhook", func(ctx *gin.Context) {
 		body, _ := io.ReadAll(ctx.Request.Body)
 		ctx.JSON(http.StatusOK, string(body))
-		log.Print(string(body))
-		log.Print(ctx.Request.Header)
+		//log.Print(string(body))
+		//log.Print(ctx.Request.Header)
 	})
 
 	server.router = router
