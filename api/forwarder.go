@@ -10,7 +10,7 @@ import (
 )
 
 func get_github_meta_api_response() map[string]interface{} {
-	// step 1: loop through jsons, delete if older than 1 day
+	// step 1: loop through json, delete if older than 1 day
 	// if returns err, then need to download. otherwise, returns latest
 	filepath, err := find_and_clean_json_files()
 

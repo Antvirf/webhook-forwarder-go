@@ -53,10 +53,7 @@ func check_ip_in_accepted_range(incomingIps []string, allowedIps []net.IPNet) bo
 		inc_ip := net.ParseIP(str_inc_ip)
 		for _, allowed_ip_range := range allowedIps {
 			if allowed_ip_range.Contains(inc_ip) {
-				// log.Println("SUCCESS:    ", inc_ip, "not in", allowed_ip_range)
 				return true
-			} else {
-				// log.Println("FAIL:    ", inc_ip, "not in", allowed_ip_range)
 			}
 		}
 	}
