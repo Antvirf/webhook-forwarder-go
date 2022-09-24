@@ -40,8 +40,8 @@ func getIpRangesFromApiResponse(response map[string]interface{}) []net.IPNet {
 	for k, v := range response {
 		if k == "hooks" {
 			for _, value := range v.([]interface{}) {
-				_, adder_value, _ := net.ParseCIDR(value.(string))
-				ips = append(ips, *adder_value)
+				_, adderValue, _ := net.ParseCIDR(value.(string))
+				ips = append(ips, *adderValue)
 			}
 		}
 	}
@@ -49,10 +49,10 @@ func getIpRangesFromApiResponse(response map[string]interface{}) []net.IPNet {
 }
 
 func CheckIpInAcceptedRange(incomingIps []string, allowedIps []net.IPNet) bool {
-	for _, str_inc_ip := range incomingIps {
-		inc_ip := net.ParseIP(str_inc_ip)
-		for _, allowed_ip_range := range allowedIps {
-			if allowed_ip_range.Contains(inc_ip) {
+	for _, strIncIp := range incomingIps {
+		incIp := net.ParseIP(strIncIp)
+		for _, allowedIpRange := range allowedIps {
+			if allowedIpRange.Contains(incIp) {
 				return true
 			}
 		}
@@ -74,7 +74,7 @@ func GetGithubMetaApiFromFile(filepath string) map[string]interface{} {
 }
 
 // file finders from https://stackoverflow.com/questions/60584697/find-a-file-by-regex-in-golang-given-the-regex-and-path
-func walk_files(root string, fn func(string) bool) []string {
+func walkFiles(root string, fn func(string) bool) []string {
 	var files []string
 	filepath.WalkDir(root, func(s string, d fs.DirEntry, e error) error {
 		if fn(s) {
@@ -87,37 +87,37 @@ func walk_files(root string, fn func(string) bool) []string {
 
 // file finders from https://stackoverflow.com/questions/60584697/find-a-file-by-regex-in-golang-given-the-regex-and-path
 func FindAndCleanJsonFiles() (string, error) {
-	var returning_files []string
-	files := walk_files(".", func(s string) bool {
+	var returnFiles []string
+	files := walkFiles(".", func(s string) bool {
 		return filepath.Ext(s) == ".json"
 	})
 	for _, file := range files {
 		// get date
-		split_filename := strings.Split(file, "_")
-		split_filename_str := split_filename[len(split_filename)-1]
-		split_filename_str = strings.Split(split_filename_str, ".")[0]
+		splitFilename := strings.Split(file, "_")
+		splitFilenameStr := splitFilename[len(splitFilename)-1]
+		splitFilenameStr = strings.Split(splitFilenameStr, ".")[0]
 
 		// convert date
-		date, err := time.Parse("20060102", split_filename_str)
+		date, err := time.Parse("20060102", splitFilenameStr)
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		// check if older than 24 hours
-		is_expired := date.Before(time.Now().Add(time.Hour * -24))
+		isExpired := date.Before(time.Now().Add(time.Hour * -24))
 
 		// delete if yes
-		if is_expired {
+		if isExpired {
 			os.Remove(file)
 		} else {
-			returning_files = append(returning_files, file)
+			returnFiles = append(returnFiles, file)
 		}
 	}
 
-	if len(returning_files) >= 1 {
-		return_file := returning_files[len(returning_files)-1]
-		log.Println("reading github api response from local file:", return_file)
-		return return_file, nil
+	if len(returnFiles) >= 1 {
+		returnFile := returnFiles[len(returnFiles)-1]
+		log.Println("reading github api response from local file:", returnFile)
+		return returnFile, nil
 	} else {
 		log.Println("no valid local api response json found, querying github...")
 		return "", errors.New("no valid files found")

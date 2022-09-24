@@ -26,8 +26,8 @@ func getGithubMetaApiResponse() map[string]interface{} {
 
 func (server *Server) forwardWebhook(ctx *gin.Context) {
 
-	api_response := getGithubMetaApiResponse()
-	hook_ip_ranges := getIpRangesFromApiResponse(api_response)
+	apiResponse := getGithubMetaApiResponse()
+	hookIpRanges := getIpRangesFromApiResponse(apiResponse)
 
 	// define list of incoming ips
 	incomingIps := []string{
@@ -38,7 +38,7 @@ func (server *Server) forwardWebhook(ctx *gin.Context) {
 	}
 
 	// check one: x-client-ip / x-forwarded-for ip
-	conditionIpMatch := CheckIpInAcceptedRange(incomingIps, hook_ip_ranges)
+	conditionIpMatch := CheckIpInAcceptedRange(incomingIps, hookIpRanges)
 	if !conditionIpMatch {
 		log.Println("unauthorized sender IPs", incomingIps, "returning 401")
 		ctx.JSON(http.StatusUnauthorized, "unauthorized IP")
