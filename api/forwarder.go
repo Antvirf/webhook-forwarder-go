@@ -9,25 +9,25 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func get_github_meta_api_response() map[string]interface{} {
+func getGithubMetaApiResponse() map[string]interface{} {
 	// step 1: loop through json, delete if older than 1 day
 	// if returns err, then need to download. otherwise, returns latest
-	filepath, err := find_and_clean_json_files()
+	filepath, err := FindAndCleanJsonFiles()
 
 	// step 2: if it returned an error, we need to fetch it from GitHub
 	if err != nil {
-		filepath = query_github_meta_api_to_json()
+		filepath = queryGithubMetaApiToJson()
 	}
 
 	// step 3: read file and return map
-	return get_github_meta_api_from_file(filepath)
+	return GetGithubMetaApiFromFile(filepath)
 
 }
 
 func (server *Server) forwardWebhook(ctx *gin.Context) {
 
-	api_response := get_github_meta_api_response()
-	hook_ip_ranges := get_ip_ranges_from_api_response(api_response)
+	api_response := getGithubMetaApiResponse()
+	hook_ip_ranges := getIpRangesFromApiResponse(api_response)
 
 	// define list of incoming ips
 	incomingIps := []string{
@@ -38,7 +38,7 @@ func (server *Server) forwardWebhook(ctx *gin.Context) {
 	}
 
 	// check one: x-client-ip / x-forwarded-for ip
-	conditionIpMatch := check_ip_in_accepted_range(incomingIps, hook_ip_ranges)
+	conditionIpMatch := CheckIpInAcceptedRange(incomingIps, hook_ip_ranges)
 	if !conditionIpMatch {
 		log.Println("unauthorized sender IPs", incomingIps, "returning 401")
 		ctx.JSON(http.StatusUnauthorized, "unauthorized IP")
@@ -48,10 +48,10 @@ func (server *Server) forwardWebhook(ctx *gin.Context) {
 	// check three: webhook signature
 	requestBody, _ := io.ReadAll(ctx.Request.Body)
 	hookSignature := ctx.Request.Header.Get("x-hub-signature-256")
-	computedSignature := create_signature("secret", string(requestBody))
+	computedSignature := createSignature("secret", string(requestBody))
 
 	// compare digest hmac compare digest local sig vs payload sig
-	if !(hookSignature == computedSignature) {
+	if hookSignature != computedSignature {
 		log.Println("signature does not match, returning 401")
 		ctx.JSON(http.StatusUnauthorized, "unauthorized webhook")
 		return
@@ -64,7 +64,7 @@ func (server *Server) forwardWebhook(ctx *gin.Context) {
 	}
 
 	// add headers from context to the new request
-	add_headers_to_request(ctx, req)
+	AddHeadersToRequest(ctx, req)
 
 	// create client and forward the request
 	client := &http.Client{}

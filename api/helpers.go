@@ -20,13 +20,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func create_signature(token string, message string) string {
+func createSignature(token string, message string) string {
 	signature := hmac.New(sha256.New, []byte(token))
 	signature.Write([]byte(message))
 	return hex.EncodeToString(signature.Sum(nil))
 }
 
-func add_headers_to_request(ctx *gin.Context, req *http.Request) {
+func AddHeadersToRequest(ctx *gin.Context, req *http.Request) {
 	for key, header := range ctx.Request.Header {
 		// if v is list, add multiple times
 		for _, value := range header {
@@ -35,7 +35,7 @@ func add_headers_to_request(ctx *gin.Context, req *http.Request) {
 	}
 }
 
-func get_ip_ranges_from_api_response(response map[string]interface{}) []net.IPNet {
+func getIpRangesFromApiResponse(response map[string]interface{}) []net.IPNet {
 	var ips []net.IPNet
 	for k, v := range response {
 		if k == "hooks" {
@@ -48,7 +48,7 @@ func get_ip_ranges_from_api_response(response map[string]interface{}) []net.IPNe
 	return ips
 }
 
-func check_ip_in_accepted_range(incomingIps []string, allowedIps []net.IPNet) bool {
+func CheckIpInAcceptedRange(incomingIps []string, allowedIps []net.IPNet) bool {
 	for _, str_inc_ip := range incomingIps {
 		inc_ip := net.ParseIP(str_inc_ip)
 		for _, allowed_ip_range := range allowedIps {
@@ -60,7 +60,7 @@ func check_ip_in_accepted_range(incomingIps []string, allowedIps []net.IPNet) bo
 	return false
 }
 
-func get_github_meta_api_from_file(filepath string) map[string]interface{} {
+func GetGithubMetaApiFromFile(filepath string) map[string]interface{} {
 	content, err := os.ReadFile(filepath)
 	if err != nil {
 		log.Fatal("Error when opening file: ", err)
@@ -86,7 +86,7 @@ func walk_files(root string, fn func(string) bool) []string {
 }
 
 // file finders from https://stackoverflow.com/questions/60584697/find-a-file-by-regex-in-golang-given-the-regex-and-path
-func find_and_clean_json_files() (string, error) {
+func FindAndCleanJsonFiles() (string, error) {
 	var returning_files []string
 	files := walk_files(".", func(s string) bool {
 		return filepath.Ext(s) == ".json"
@@ -125,7 +125,7 @@ func find_and_clean_json_files() (string, error) {
 }
 
 // adapted from https://stackoverflow.com/questions/16311232/how-to-pipe-an-http-response-to-a-file-in-go
-func query_github_meta_api_to_json() string {
+func queryGithubMetaApiToJson() string {
 	resp, err := http.Get("https://api.github.com/meta")
 	if err != nil {
 		log.Fatal(err)
