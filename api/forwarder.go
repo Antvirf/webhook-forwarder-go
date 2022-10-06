@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 )
@@ -48,7 +49,9 @@ func (server *Server) forwardWebhook(ctx *gin.Context) {
 	// check three: webhook signature
 	requestBody, _ := io.ReadAll(ctx.Request.Body)
 	hookSignature := ctx.Request.Header.Get("x-hub-signature-256")
-	computedSignature := createSignature("secret", string(requestBody))
+
+	secret_value := os.Getenv("WEBHOOK_TOKEN_SECRET")
+	computedSignature := createSignature(secret_value, string(requestBody))
 
 	// compare digest hmac compare digest local sig vs payload sig
 	if hookSignature != computedSignature {
@@ -58,7 +61,8 @@ func (server *Server) forwardWebhook(ctx *gin.Context) {
 	}
 
 	// create new request for forwarding
-	req, err := http.NewRequest("POST", "http://localhost:8080/receive_webhook", bytes.NewBuffer(requestBody))
+	TARGET_URL := os.Getenv("TARGET_URL")
+	req, err := http.NewRequest("POST", TARGET_URL, bytes.NewBuffer(requestBody))
 	if err != nil {
 		errorResponse(err)
 	}
